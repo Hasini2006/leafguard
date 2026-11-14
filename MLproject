@@ -1,0 +1,26 @@
+name: leafguard
+
+python_env: python_env.yaml
+
+# Same pinned environment for development and testing (python_env.yaml -> requirements.txt).
+#   mlflow run . --env-manager local          # the whole CI + ML pipeline in the current venv
+#   mlflow run .                              # MLflow builds a fresh env from python_env.yaml
+#   mlflow run . -e train -P epochs=6 --env-manager local   # one training run only
+
+entry_points:
+
+  main:
+    command: "dvc repro"
+
+  data:
+    command: "dvc repro preprocess"
+
+  train:
+    parameters:
+      epochs: {type: int, default: 6}
+      lr: {type: float, default: 0.001}
+      batch_size: {type: int, default: 32}
+    command: "python -m leafguard.training.train --epochs {epochs} --lr {lr} --batch-size {batch_size}"
+
+  evaluate:
+    command: "python -m leafguard.training.evaluate"

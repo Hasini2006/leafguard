@@ -1,0 +1,133 @@
+stages:
+  lint:
+    cmd: python scripts/run_lint.py
+    deps:
+      - src
+      - services/backend/app
+      - tests
+      - scripts
+      - pyproject.toml
+    outs:
+      - reports/lint.txt:
+          cache: false
+
+  unit_tests:
+    cmd: python scripts/run_tests.py
+    deps:
+      - src
+      - services/backend/app
+      - tests/unit
+      - reports/lint.txt
+    outs:
+      - reports/junit.xml:
+          cache: false
+      - reports/coverage.xml:
+          cache: false
+      - reports/tests.html:
+          cache: false
+      - reports/ci_gate.json:
+          cache: false
+
+  validate:
+    cmd: python -m leafguard.data.validate
+    deps:
+      - src/leafguard/data/validate.py
+      - src/leafguard/images.py
+      - data/raw
+      - reports/ci_gate.json
+    params:
+      - data.raw_dir
+      - data.manifest_path
+      - data.classes
+      - data.min_side_px
+      - data.blur_threshold
+      - data.min_images_per_class
+      - spark
+    outs:
+      - data/interim/manifest.parquet
+    metrics:
+      - reports/data_quality.json:
+          cache: false
+
+  split:
+    cmd: python -m leafguard.data.split
+    deps:
+      - src/leafguard/data/split.py
+      - data/interim/manifest.parquet
+    params:
+      - seed
+      - data.classes
+      - data.max_per_class
+      - data.val_fraction
+      - data.train_source
+      - data.test_source
+      - data.splits_path
+    outs:
+      - data/interim/splits.parquet
+    metrics:
+      - reports/split_summary.json:
+          cache: false
+
+  preprocess:
+    cmd: python -m leafguard.data.preprocess
+    deps:
+      - src/leafguard/data/preprocess.py
+      - src/leafguard/images.py
+      - src/leafguard/drift.py
+      - data/interim/splits.parquet
+    params:
+      - data.image_size
+      - data.processed_dir
+      - data.baseline_path
+      - data.n_bins
+      - spark
+    outs:
+      - data/processed
+      - models/baseline.json
+    metrics:
+      - reports/throughput.json:
+          cache: false
+
+  train:
+    cmd: python -m leafguard.training.train
+    deps:
+      - src/leafguard/training/train.py
+      - data/processed
+      - data/interim/splits.parquet
+    params:
+      - seed
+      - train
+      - data.splits_path
+      - data.image_size
+      - serving.model_name
+    outs:
+      - models/model.pt
+      - models/classes.json
+      - models/run.json
+
+  evaluate:
+    cmd: python -m leafguard.training.evaluate
+    deps:
+      - src/leafguard/training/evaluate.py
+      - models/model.pt
+      - data/processed
+    metrics:
+      - reports/metrics.json:
+          cache: false
+    plots:
+      - reports/confusion_matrix.png:
+          cache: false
+
+  gate:
+    cmd: python -m leafguard.training.registry promote
+    deps:
+      - src/leafguard/training/registry.py
+      - src/leafguard/training/wrapper.py
+      - models/run.json
+      - reports/metrics.json
+    params:
+      - gate
+      - serving.model_name
+    outs:
+      - reports/gate.json:
+          cache: false

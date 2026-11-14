@@ -1,0 +1,5 @@
+===== ruff =====
+All checks passed!
+===== black =====
+All done! ✨ 🍰 ✨
+31 files would be left unchanged.

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LeafGuard - Tomato leaf diagnosis</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="farmer">
+
+<!-- The farmer-facing screen: one photo, one button, one coloured answer
+     (green = healthy, red = disease found, yellow = not sure). The operator screen
+     (pipeline console) is linked from the footer only. -->
+
+<header class="bar">
+  <a class="brand" href="index.html"><span class="mark">LG</span> LeafGuard</a>
+  <nav aria-label="Main">
+    <a class="active" href="index.html">Check leaf</a>
+    <a href="help.html">Help</a>
+  </nav>
+</header>
+
+<main>
+
+  <section class="card" aria-labelledby="upload-title">
+    <h1 id="upload-title" class="big-title">Is my tomato leaf sick?</h1>
+    <p class="muted">Upload a photo of one leaf, then press <strong>Check this leaf</strong>.</p>
+
+    <!-- One upload button; the area also accepts a dragged file. -->
+    <div id="dropzone" class="pick-area">
+      <button id="gallery-btn" class="pick" type="button">Upload photo</button>
+      <p class="muted small center drop-note">or drag a photo here (JPG, PNG, WEBP, up to 5 MB)</p>
+      <input id="file-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+    </div>
+
+    <div id="preview-area" class="preview hidden">
+      <img id="preview" alt="The photo you selected">
+      <div class="preview-side">
+        <p id="file-name" class="strong"></p>
+        <p id="file-size" class="muted"></p>
+        <button id="change-btn" class="ghost big-ghost" type="button">New photo</button>
+      </div>
+    </div>
+
+    <p id="upload-error" class="alert hidden" role="alert"></p>
+
+    <button id="diagnose-btn" class="primary huge" type="button" disabled>
+      <span id="diagnose-label">Check this leaf</span>
+    </button>
+    <p id="status-line" class="muted center hidden" aria-live="polite"></p>
+  </section>
+
+  <section id="result" class="card result hidden" aria-live="polite">
+    <!-- The verdict as one coloured label: green Healthy, red Disease found, yellow
+         Not sure. -->
+    <div class="verdict">
+      <span id="verdict-label" class="label"></span>
+      <h2 id="result-name"></h2>
+      <p id="result-description" class="muted"></p>
+    </div>
+
+    <div class="meter">
+      <div class="meter-head">
+        <span>Confidence</span>
+        <strong id="confidence-text"></strong>
+      </div>
+      <div class="track"><div id="confidence-bar" class="fill"></div></div>
+    </div>
+
+    <div id="advice-box" class="advice hidden">
+      <h3>What to do</h3>
+      <p id="advice-text"></p>
+    </div>
+
+    <div id="hint-box" class="hint hidden">
+      <h3>Please take a new photo</h3>
+      <p id="hint-text"></p>
+      <ul>
+        <li>One leaf fills the photo</li>
+        <li>Daylight, no strong shadow</li>
+        <li>Hold the phone still</li>
+      </ul>
+    </div>
+
+    <details id="alternatives">
+      <summary>Other possibilities</summary>
+      <ul id="top-list" class="plain"></ul>
+    </details>
+
+    <div class="feedback">
+      <p class="strong">Was this right?</p>
+      <div class="row">
+        <button id="yes-btn" class="thumb" type="button">Yes</button>
+        <button id="no-btn" class="thumb" type="button">No</button>
+      </div>
+      <div id="correction" class="row hidden">
+        <label class="sr-only" for="correct-class">The correct disease</label>
+        <select id="correct-class"></select>
+        <button id="send-feedback" class="ghost big-ghost" type="button">Send</button>
+      </div>
+      <p id="feedback-done" class="muted hidden"></p>
+    </div>
+
+    <p id="disclaimer" class="disclaimer"></p>
+  </section>
+
+  <section id="history-card" class="card hidden">
+    <h2>Recent checks</h2>
+    <ul id="history" class="plain"></ul>
+  </section>
+</main>
+
+<footer class="bar foot">
+  <span id="model-line" class="muted">Checking the diagnosis service...</span>
+  <span class="muted">Educational prototype - ask an expert before treating</span>
+  <a class="muted" href="pipeline.html">For operators: pipeline console</a>
+</footer>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+apiVersion: 1
+
+# Dashboards are provisioned from the repository, so they appear automatically on a fresh
+# `docker compose up` and are versioned in git like the rest of the project.
+providers:
+  - name: leafguard
+    folder: LeafGuard
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false

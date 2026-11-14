@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LeafGuard - Help</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="farmer">
+
+<header class="bar">
+  <a class="brand" href="index.html"><span class="mark">LG</span> LeafGuard</a>
+  <nav aria-label="Main">
+    <a href="index.html">Check leaf</a>
+    <a class="active" href="help.html">Help</a>
+  </nav>
+</header>
+
+<main>
+  <section class="intro">
+    <h1>How to use LeafGuard</h1>
+  </section>
+
+  <section class="card">
+    <h2>Three steps</h2>
+    <ol>
+      <li><strong>Press Upload photo</strong> and pick a photo of one tomato leaf, filling most
+          of the frame.</li>
+      <li><strong>Press Check this leaf.</strong> The answer comes back in about a second.</li>
+      <li><strong>Look at the coloured label.</strong></li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>What the colours mean</h2>
+    <ul class="key">
+      <li><span class="label good">Healthy</span>
+          <span>The leaf looks healthy.</span></li>
+      <li><span class="label sick">Disease found</span>
+          <span>The disease name is shown below the label. Read <em>What to do</em>.</span></li>
+      <li><span class="label unsure">Not sure</span>
+          <span>The photo was not clear enough. Take a new, clearer photo.</span></li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Taking a good photo</h2>
+    <ul>
+      <li>Use daylight. Flash and deep shade both confuse the model.</li>
+      <li>Photograph a single leaf against a plain background.</li>
+      <li>Hold the camera steady. A blurry photo is much more likely to come back as
+          uncertain.</li>
+      <li>Get close enough that the leaf fills most of the picture.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>What the result means</h2>
+    <p>The confidence is how strongly the model favours that one class over the others. A
+       high score means the photo looks like the training examples of that disease. It is
+       not a probability that the diagnosis is correct.</p>
+    <p>When the confidence is low, or the photo does not look like a leaf, LeafGuard shows
+       <strong>Not sure</strong> and asks for a better photo instead of guessing.</p>
+  </section>
+
+  <section class="card">
+    <h2>If something goes wrong</h2>
+    <ul>
+      <li><strong>"That file type is not supported"</strong>: choose a JPG, PNG or WEBP photo.
+          Screenshots of documents or PDFs will not work.</li>
+      <li><strong>"That image is larger than 5 MB"</strong>: most phones have a setting for a
+          smaller photo size, or send the photo to yourself to shrink it.</li>
+      <li><strong>"That image is only ... pixels"</strong>: the photo is too small to read.
+          Take it closer, or use the original instead of a thumbnail.</li>
+      <li><strong>"The diagnosis service is starting up"</strong>: wait a minute and press
+          Check again. The footer shows the model version once it is ready.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>What LeafGuard can recognise</h2>
+    <div id="class-list"><p class="muted">Loading...</p></div>
+  </section>
+
+  <section class="card">
+    <h2>Limitations worth knowing</h2>
+    <ul>
+      <li>It was trained on laboratory photographs: single leaves on plain backgrounds.
+          Photos taken in a real field are harder for it.</li>
+      <li>It only knows the diseases listed above. Anything else gets matched to the
+          closest one it does know, which is why the uncertain state matters.</li>
+      <li>It looks at one leaf at a time and knows nothing about the rest of the plant.</li>
+      <li>It is a student project for learning the lifecycle of an AI system, not a
+          certified diagnostic tool. Confirm with an expert before treating a crop.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="bar foot">
+  <span class="muted">Educational prototype - not a substitute for expert advice</span>
+  <a class="muted" href="pipeline.html">For operators: pipeline console</a>
+</footer>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+name: leafguard
+
+services:
+
+  frontend:
+    build:
+      context: .
+      dockerfile: services/frontend/Dockerfile
+    image: leafguard-frontend:1.0.0
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    environment:
+      BACKEND_HOST: backend         
+      BACKEND_PORT: 8000
+      API_BASE: /api/v1             
+      MLFLOW_PORT: ${MLFLOW_PORT:-5000}
+      GRAFANA_PORT: ${GRAFANA_PORT:-3000}
+      PROMETHEUS_PORT: ${PROMETHEUS_PORT:-9090}
+      BACKEND_PUBLIC_PORT: ${BACKEND_PORT:-8000}
+    depends_on:
+      backend:
+        condition: service_healthy
+    mem_limit: 64m
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: services/backend/Dockerfile
+    image: leafguard-backend:1.0.0
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      MODEL_SERVER_URL: http://model-server:5001
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MODEL_NAME: ${MODEL_NAME:-leafguard}
+      CONFIDENCE_THRESHOLD: ${CONFIDENCE_THRESHOLD:-0.60}
+      MIN_GREEN_RATIO: ${MIN_GREEN_RATIO:-0.05}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-5}
+      FERNET_KEY: ${FERNET_KEY:-}
+      REPORTS_DIR: /app/reports
+      FEEDBACK_DIR: /app/feedback
+      BASELINE_PATH: /app/models/baseline.json
+      LEAFGUARD_LOG_DIR: /tmp/logs
+    volumes:
+      - ./reports:/app/reports:ro          
+      - ./models:/app/models:ro            
+      - ./data/feedback:/app/feedback      
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    mem_limit: 512m
+    restart: unless-stopped
+
+  model-server:
+    build:
+      context: .
+      dockerfile: services/model_server/Dockerfile
+    image: leafguard-model-server:1.0.0
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MODEL_NAME: ${MODEL_NAME:-leafguard}
+    ports:
+      - "${MODEL_PORT:-5001}:5001"
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    mem_limit: 1500m
+    restart: unless-stopped
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: services/mlflow/Dockerfile
+    image: leafguard-mlflow:1.0.0
+    ports:
+      - "${MLFLOW_PORT:-5000}:5000"
+    volumes:
+      - mlflow-data:/mlflow
+    mem_limit: 768m
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+    mem_limit: 512m
+    restart: unless-stopped
+
+  grafana:
+    profiles: ["bundled-grafana"]
+    image: grafana/grafana:11.4.0
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-leafguard}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SECURITY_ALLOW_EMBEDDING: "true"      
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    mem_limit: 256m
+    restart: unless-stopped
+
+  pushgateway:
+    image: prom/pushgateway:v1.10.0
+    ports:
+      - "${PUSHGATEWAY_PORT:-9091}:9091"
+    mem_limit: 128m
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    command:
+      - --path.rootfs=/host
+    volumes:
+      - /:/host:ro,rslave
+    pid: host
+    mem_limit: 128m
+    restart: unless-stopped
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    mem_limit: 300m
+    restart: unless-stopped
+
+volumes:
+  mlflow-data:
+  prometheus-data:
+  grafana-data:

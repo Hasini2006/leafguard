@@ -1,0 +1,45 @@
+# Every tunable value for LeafGuard. DVC tracks which stage uses which key,
+# so changing one value re-runs only the stages that depend on it.
+
+seed: 42
+
+data:
+  raw_dir: data/raw                         # data/raw/<train|val>/<class>/<image>
+  manifest_path: data/interim/manifest.parquet
+  splits_path: data/interim/splits.parquet
+  processed_dir: data/processed
+  baseline_path: models/baseline.json
+  train_source: train                       # raw folder that is split into train + val
+  test_source: val                          # raw folder kept untouched as the golden test set
+  classes: [bacterial_spot, early_blight, healthy, late_blight, leaf_mold, septoria]
+  max_per_class: null                       # null = all images; set a number for a smaller run
+  val_fraction: 0.15
+  image_size: 128                           # small on purpose: 4 CPU cores, no GPU
+  min_side_px: 64
+  blur_threshold: 5.0                       # variance of Laplacian; below this = blurry
+  min_images_per_class: 20                  # quality gate for the validate stage
+  n_bins: 10                                # drift reference histogram bins
+
+spark:
+  master: local[4]
+  driver_memory: 2g
+  partitions: 8
+
+train:
+  backbone: mobilenet_v3_small
+  epochs: 6
+  batch_size: 32
+  lr: 0.001
+  freeze_backbone: true                     # train the classifier head only
+  num_threads: 4
+  num_workers: 2
+
+gate:
+  min_accuracy: 0.70                        # a candidate below this is never promoted
+  max_drop_vs_champion: 0.02                # allowed accuracy regression
+  max_latency_ms: 400                       # p95 CPU inference budget
+
+serving:
+  model_name: leafguard
+  confidence_threshold: 0.60                # below this the UI says "uncertain"
+  min_green_ratio: 0.05                     # below this the image is probably not a leaf

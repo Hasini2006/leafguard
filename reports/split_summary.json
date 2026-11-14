@@ -1,0 +1,34 @@
+{
+  "total": 1436,
+  "per_split": {
+    "test": 237,
+    "train": 1019,
+    "val": 180
+  },
+  "per_split_and_class": {
+    "test": {
+      "bacterial_spot": 40,
+      "early_blight": 39,
+      "healthy": 40,
+      "late_blight": 40,
+      "leaf_mold": 39,
+      "septoria": 39
+    },
+    "train": {
+      "bacterial_spot": 170,
+      "early_blight": 170,
+      "healthy": 170,
+      "late_blight": 170,
+      "leaf_mold": 169,
+      "septoria": 170
+    },
+    "val": {
+      "bacterial_spot": 30,
+      "early_blight": 30,
+      "healthy": 30,
+      "late_blight": 30,
+      "leaf_mold": 30,
+      "septoria": 30
+    }
+  }
+}

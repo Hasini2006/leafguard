@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+.venv/
+.env
+kaggle.json
+
+logs/
+mlruns/
+spark-warehouse/
+metastore_db/
+derby.log
+reports/pipeline_runs.jsonl
+
+data/feedback/*
+!data/feedback/.gitkeep
+
+data/download/
+

@@ -1,0 +1,10 @@
+# Environment definition for `mlflow run .` (MLproject). It installs the same pinned
+# requirements as the development venv, so a fresh `mlflow run` environment and the dev
+# environment are identical (dev/test parity).
+python: "3.14"
+build_dependencies:
+  - pip
+  - setuptools
+  - wheel
+dependencies:
+  - -r requirements.txt

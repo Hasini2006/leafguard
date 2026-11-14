@@ -1,0 +1,9 @@
+{
+  "lint": "passed",
+  "unit_tests": "passed",
+  "tests": 55,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "passed": 55
+}

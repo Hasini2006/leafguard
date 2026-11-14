@@ -1,0 +1,299 @@
+schema: '2.0'
+stages:
+  lint:
+    cmd: python scripts/run_lint.py
+    deps:
+    - path: pyproject.toml
+      hash: md5
+      md5: 2e6839a8c61fc609a63cc4bd03642d7b
+      size: 1778
+    - path: scripts
+      hash: md5
+      md5: 4b64fc8c5155fb12ca7f4631ffc8c21a.dir
+      size: 10637
+      nfiles: 5
+    - path: services/backend/app
+      hash: md5
+      md5: 303a42a0842490f1b78ad13937bf2020.dir
+      size: 33953
+      nfiles: 6
+    - path: src
+      hash: md5
+      md5: 2d85294a11ddb61f25550c63294802f8.dir
+      size: 73189
+      nfiles: 14
+    - path: tests
+      hash: md5
+      md5: bf97ee818dadf67cd431a4f229ed7195.dir
+      size: 35953
+      nfiles: 6
+    outs:
+    - path: reports/lint.txt
+      hash: md5
+      md5: 982398386b0663a395c30d7bcd8f3501
+      size: 111
+  unit_tests:
+    cmd: python scripts/run_tests.py
+    deps:
+    - path: reports/lint.txt
+      hash: md5
+      md5: 982398386b0663a395c30d7bcd8f3501
+      size: 111
+    - path: services/backend/app
+      hash: md5
+      md5: 303a42a0842490f1b78ad13937bf2020.dir
+      size: 33953
+      nfiles: 6
+    - path: src
+      hash: md5
+      md5: 2d85294a11ddb61f25550c63294802f8.dir
+      size: 73189
+      nfiles: 14
+    - path: tests/unit
+      hash: md5
+      md5: dae182d77aebd812ff664b913fde26e5.dir
+      size: 24217
+      nfiles: 3
+    outs:
+    - path: reports/ci_gate.json
+      hash: md5
+      md5: 2126bbba55d76ea90fc405de358ffe04
+      size: 128
+    - path: reports/coverage.xml
+      hash: md5
+      md5: abf192bb1d352a239bef1cc1d85d61e2
+      size: 51380
+    - path: reports/junit.xml
+      hash: md5
+      md5: 1363522b4356698daa1570d3b3f14b36
+      size: 6862
+    - path: reports/tests.html
+      hash: md5
+      md5: 8335a175004eec4066fca7810106261a
+      size: 96379
+  validate:
+    cmd: python -m leafguard.data.validate
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: 4ea2db6756b3bfb45fe5dc40e381ff94.dir
+      size: 23180698
+      nfiles: 1440
+    - path: reports/ci_gate.json
+      hash: md5
+      md5: 2126bbba55d76ea90fc405de358ffe04
+      size: 128
+    - path: src/leafguard/data/validate.py
+      hash: md5
+      md5: d22fc08ebccfeb60f48d0a4277df2082
+      size: 8805
+    - path: src/leafguard/images.py
+      hash: md5
+      md5: f8a6103326b31e99aa6e6b7084be80ee
+      size: 5891
+    params:
+      params.yaml:
+        data.blur_threshold: 5.0
+        data.classes:
+        - bacterial_spot
+        - early_blight
+        - healthy
+        - late_blight
+        - leaf_mold
+        - septoria
+        data.manifest_path: data/interim/manifest.parquet
+        data.min_images_per_class: 20
+        data.min_side_px: 64
+        data.raw_dir: data/raw
+        spark:
+          master: local[4]
+          driver_memory: 2g
+          partitions: 8
+    outs:
+    - path: data/interim/manifest.parquet
+      hash: md5
+      md5: f8afa343566e6fd14794ca44507a538f.dir
+      size: 274979
+      nfiles: 4
+    - path: reports/data_quality.json
+      hash: md5
+      md5: 4413c299e98ebdd0a9e09ffa7b9d4b9e
+      size: 724
+  split:
+    cmd: python -m leafguard.data.split
+    deps:
+    - path: data/interim/manifest.parquet
+      hash: md5
+      md5: f8afa343566e6fd14794ca44507a538f.dir
+      size: 274979
+      nfiles: 4
+    - path: src/leafguard/data/split.py
+      hash: md5
+      md5: cd281ad36584e9b654550ef2bb6aa0a4
+      size: 5832
+    params:
+      params.yaml:
+        data.classes:
+        - bacterial_spot
+        - early_blight
+        - healthy
+        - late_blight
+        - leaf_mold
+        - septoria
+        data.max_per_class:
+        data.splits_path: data/interim/splits.parquet
+        data.test_source: val
+        data.train_source: train
+        data.val_fraction: 0.15
+        seed: 42
+    outs:
+    - path: data/interim/splits.parquet
+      hash: md5
+      md5: ef57fc43d5877c7d56a8d981e1b36949
+      size: 219991
+    - path: reports/split_summary.json
+      hash: md5
+      md5: 5635113da453bd4c3c84f611816b2d50
+      size: 625
+  preprocess:
+    cmd: python -m leafguard.data.preprocess
+    deps:
+    - path: data/interim/splits.parquet
+      hash: md5
+      md5: ef57fc43d5877c7d56a8d981e1b36949
+      size: 219991
+    - path: src/leafguard/data/preprocess.py
+      hash: md5
+      md5: 3190843ed978450aa5cd18c6b00ab41f
+      size: 6659
+    - path: src/leafguard/drift.py
+      hash: md5
+      md5: 820087cadf9eae3c4363c63c5efb4283
+      size: 2447
+    - path: src/leafguard/images.py
+      hash: md5
+      md5: f8a6103326b31e99aa6e6b7084be80ee
+      size: 5891
+    params:
+      params.yaml:
+        data.baseline_path: models/baseline.json
+        data.image_size: 128
+        data.n_bins: 10
+        data.processed_dir: data/processed
+        spark:
+          master: local[4]
+          driver_memory: 2g
+          partitions: 8
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: 6aff57987eaad4ace09c3c93406a6657.dir
+      size: 8244356
+      nfiles: 1437
+    - path: models/baseline.json
+      hash: md5
+      md5: 5a71782188115201b84529b721c42efe
+      size: 2179
+    - path: reports/throughput.json
+      hash: md5
+      md5: b99be96a8f872921e70cffd59e157a23
+      size: 306
+  train:
+    cmd: python -m leafguard.training.train
+    deps:
+    - path: data/interim/splits.parquet
+      hash: md5
+      md5: ef57fc43d5877c7d56a8d981e1b36949
+      size: 219991
+    - path: data/processed
+      hash: md5
+      md5: 6aff57987eaad4ace09c3c93406a6657.dir
+      size: 8244356
+      nfiles: 1437
+    - path: src/leafguard/training/train.py
+      hash: md5
+      md5: 0373490d3e2e9b835a8b325d3dcf8635
+      size: 12263
+    params:
+      params.yaml:
+        data.image_size: 128
+        data.splits_path: data/interim/splits.parquet
+        seed: 42
+        serving.model_name: leafguard
+        train:
+          backbone: mobilenet_v3_small
+          epochs: 6
+          batch_size: 32
+          lr: 0.001
+          freeze_backbone: true
+          num_threads: 4
+          num_workers: 2
+    outs:
+    - path: models/classes.json
+      hash: md5
+      md5: ae9f4283b827d6737b34fa8e35f2586b
+      size: 152
+    - path: models/model.pt
+      hash: md5
+      md5: d26b8bdce66117d439373ab515b1f504
+      size: 6497561
+    - path: models/run.json
+      hash: md5
+      md5: ae47ca982848b49fd48ac1883eba8a0b
+      size: 1291
+  evaluate:
+    cmd: python -m leafguard.training.evaluate
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: 6aff57987eaad4ace09c3c93406a6657.dir
+      size: 8244356
+      nfiles: 1437
+    - path: models/model.pt
+      hash: md5
+      md5: d26b8bdce66117d439373ab515b1f504
+      size: 6497561
+    - path: src/leafguard/training/evaluate.py
+      hash: md5
+      md5: 6c73ac21843b74c4a0cf3de31297d7c4
+      size: 5996
+    outs:
+    - path: reports/confusion_matrix.png
+      hash: md5
+      md5: a62308f7b0ac9aecfb179792829daeb0
+      size: 36649
+    - path: reports/metrics.json
+      hash: md5
+      md5: 322dfe0cfdb9c86d47405e39356e7a5b
+      size: 384
+  gate:
+    cmd: python -m leafguard.training.registry promote
+    deps:
+    - path: models/run.json
+      hash: md5
+      md5: ae47ca982848b49fd48ac1883eba8a0b
+      size: 1291
+    - path: reports/metrics.json
+      hash: md5
+      md5: 322dfe0cfdb9c86d47405e39356e7a5b
+      size: 384
+    - path: src/leafguard/training/registry.py
+      hash: md5
+      md5: 2f10fc3b1fb42b000f26b04a27c4c81f
+      size: 10366
+    - path: src/leafguard/training/wrapper.py
+      hash: md5
+      md5: 76f2b86408de25a61def0ceb963b3ef9
+      size: 2577
+    params:
+      params.yaml:
+        gate:
+          min_accuracy: 0.7
+          max_drop_vs_champion: 0.02
+          max_latency_ms: 400
+        serving.model_name: leafguard
+    outs:
+    - path: reports/gate.json
+      hash: md5
+      md5: e04371cd57dcd26740dd8a8e7d132e0f
+      size: 145

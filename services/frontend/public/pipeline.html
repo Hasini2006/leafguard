@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LeafGuard - Pipeline console</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body>
+
+<header class="bar">
+  <a class="brand" href="index.html"><span class="mark">LG</span> LeafGuard</a>
+  <nav>
+    <a href="index.html">Check leaf</a>
+    <a class="active" href="pipeline.html">Pipeline</a>
+    <a href="help.html">Help</a>
+  </nav>
+</header>
+
+<main class="wide">
+  <section class="intro">
+    <h1>Pipeline console</h1>
+    <p>What the training pipeline did on its last run: which stages succeeded or failed,
+       how long each took, how fast it processed images, and whether the newest model was
+       allowed to go live.</p>
+  </section>
+
+  <!-- Links to the MLOps tool UIs. app.js fills in each address from config.js. -->
+  <div class="tool-links">
+    <a class="tool" data-tool="mlflow" href="#" target="_blank" rel="noopener">
+      <strong>MLflow</strong><span>experiments, metrics and the model registry</span></a>
+    <a class="tool" data-tool="grafana" data-path="/d/leafguard" href="#" target="_blank"
+       rel="noopener">
+      <strong>Grafana</strong><span>live service, model and pipeline dashboards</span></a>
+    <a class="tool" data-tool="prometheus" data-path="/alerts" href="#" target="_blank"
+       rel="noopener">
+      <strong>Prometheus</strong><span>alerts, scrape targets and raw metrics</span></a>
+    <a class="tool" data-tool="api_docs" data-path="/docs" href="#" target="_blank"
+       rel="noopener">
+      <strong>API docs</strong><span>interactive REST API reference (Swagger)</span></a>
+  </div>
+
+  <section class="card">
+    <h2>Stage status</h2>
+    <p class="muted">The most recent run of each stage, in pipeline order.</p>
+    <div class="scroll">
+      <table id="stage-table">
+        <thead>
+          <tr><th>Stage</th><th>Status</th><th>Duration</th><th>Items</th>
+              <th>Items/sec</th><th>Last run</th><th>Error</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Latest model decision</h2>
+    <div id="gate-box"><p class="muted">No decision recorded yet.</p></div>
+  </section>
+
+  <section class="card">
+    <h2>Model versions</h2>
+    <p class="muted">Every version the pipeline has registered. The one marked
+       <em>champion</em> is the one answering diagnoses now. Click a version to open it in
+       MLflow.</p>
+    <div class="scroll">
+      <table id="model-table">
+        <thead>
+          <tr><th>Version</th><th>Aliases</th><th>Gate</th><th>Accuracy</th>
+              <th>Commit</th><th>Registered</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="two-up">
+    <section class="card">
+      <h2>Data quality</h2>
+      <div id="quality-box"><p class="muted">Run the pipeline to see this.</p></div>
+    </section>
+    <section class="card">
+      <h2>Throughput</h2>
+      <div id="throughput-box"><p class="muted">Run the pipeline to see this.</p></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Pipeline graph</h2>
+    <div id="dag" class="dag"></div>
+  </section>
+
+  <section class="card">
+    <h2>Run history</h2>
+    <p class="muted">Every recorded run, newest first. Failed runs keep their error message.</p>
+    <div class="filters">
+      <label for="stage-filter">Stage</label>
+      <select id="stage-filter">
+        <option value="">All stages</option>
+        <option>lint</option><option>unit_tests</option><option>validate</option>
+        <option>split</option><option>preprocess</option><option>train</option>
+        <option>evaluate</option><option>gate</option>
+      </select>
+      <label for="status-filter">Status</label>
+      <select id="status-filter">
+        <option value="">Any</option>
+        <option value="success">Success</option>
+        <option value="failed">Failed</option>
+      </select>
+      <span id="run-counts" class="muted"></span>
+    </div>
+    <div class="scroll">
+      <table id="run-table">
+        <thead>
+          <tr><th>Started</th><th>Stage</th><th>Status</th><th>Duration</th>
+              <th>Items</th><th>Commit</th><th>Error</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="bar foot">
+  <span class="muted">Refreshes every 10 seconds</span>
+</footer>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

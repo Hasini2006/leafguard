@@ -1,0 +1,16 @@
+{
+  "image_size": 128,
+  "total_images": 1436,
+  "processed_images": 1436,
+  "failed_images": 0,
+  "per_split": {
+    "test": 237,
+    "train": 1019,
+    "val": 180
+  },
+  "output_megabytes": 7.93,
+  "elapsed_seconds": 3.52,
+  "images_per_second": 408.01,
+  "spark_master": "local[4]",
+  "partitions": 8
+}

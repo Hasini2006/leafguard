@@ -1,0 +1,59 @@
+# Alert rules evaluated by Prometheus. Firing alerts appear at http://localhost:9090/alerts
+# and in the Grafana dashboard. Thresholds follow the acceptance criteria in docs/test_plan.md.
+
+groups:
+  - name: leafguard-service
+    rules:
+      - alert: LeafGuardTargetDown
+        expr: up == 0
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: "{{ $labels.job }} is not being scraped"
+          description: "Prometheus cannot reach {{ $labels.instance }} for over a minute."
+
+      - alert: LeafGuardHighErrorRate
+        expr: |
+          sum(rate(leafguard_requests_total{status=~"5.."}[5m]))
+            / clamp_min(sum(rate(leafguard_requests_total[5m])), 0.0001) > 0.05
+        for: 2m
+        labels: {severity: warning}
+        annotations:
+          summary: "More than 5% of API requests are failing"
+
+      - alert: LeafGuardSlowPredictions
+        expr: |
+          histogram_quantile(0.95, sum by (le) (rate(leafguard_request_duration_seconds_bucket{endpoint="/api/v1/predict"}[5m]))) > 1
+        for: 2m
+        labels: {severity: warning}
+        annotations:
+          summary: "p95 prediction latency is above 1 second"
+
+  - name: leafguard-model
+    rules:
+      - alert: LeafGuardInputDrift
+        # PSI over a 50-upload window: normal traffic scores ~0.25 (rarely > 0.7), the
+        # darkened/blurred demo traffic > 3. See src/leafguard/drift.py.
+        expr: max(leafguard_drift_score) > 1
+        for: 1m
+        labels: {severity: warning}
+        annotations:
+          summary: "Uploaded images have drifted from the training data (PSI > 1.0)"
+          description: "Consider collecting new labelled data and re-running `dvc repro`."
+
+      - alert: LeafGuardManyUncertainAnswers
+        expr: |
+          sum(rate(leafguard_predictions_total{status="uncertain"}[10m]))
+            / clamp_min(sum(rate(leafguard_predictions_total[10m])), 0.0001) > 0.5
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "More than half of recent answers were uncertain"
+
+  - name: leafguard-pipeline
+    rules:
+      - alert: LeafGuardPipelineStageFailed
+        expr: leafguard_stage_last_status == 0
+        labels: {severity: warning}
+        annotations:
+          summary: "Pipeline stage {{ $labels.stage }} failed on its last run"

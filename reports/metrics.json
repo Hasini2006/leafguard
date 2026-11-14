@@ -1,0 +1,17 @@
+{
+  "run_id": "c77254ea5602423abd21450bda83f24a",
+  "test_images": 237,
+  "accuracy": 0.77637,
+  "macro_f1": 0.75542,
+  "per_class_f1": {
+    "bacterial_spot": 0.81818,
+    "early_blight": 0.43137,
+    "healthy": 0.92857,
+    "late_blight": 0.75862,
+    "leaf_mold": 0.88312,
+    "septoria": 0.71264
+  },
+  "model_size_mb": 6.498,
+  "latency_p50_ms": 1.31,
+  "latency_p95_ms": 1.77
+}

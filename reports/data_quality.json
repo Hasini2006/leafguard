@@ -1,0 +1,38 @@
+{
+  "total_images": 1440,
+  "valid_images": 1436,
+  "rejected_images": 4,
+  "rejected_by_reason": {
+    "duplicate": 4
+  },
+  "valid_per_split_and_class": {
+    "train": {
+      "bacterial_spot": 200,
+      "early_blight": 200,
+      "healthy": 200,
+      "late_blight": 200,
+      "leaf_mold": 199,
+      "septoria": 200
+    },
+    "val": {
+      "bacterial_spot": 40,
+      "early_blight": 39,
+      "healthy": 40,
+      "late_blight": 40,
+      "leaf_mold": 39,
+      "septoria": 39
+    }
+  },
+  "class_imbalance_ratio": 1.005,
+  "similar_image_groups": 4,
+  "formats": {
+    "JPEG": 1440
+  },
+  "width_range": [
+    256,
+    256
+  ],
+  "blur_median": 2497.12,
+  "elapsed_seconds": 4.757,
+  "images_per_second": 302.71
+}

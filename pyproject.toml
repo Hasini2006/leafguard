@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "leafguard"
+version = "1.0.0"
+description = "LeafGuard: an end-to-end AIOps platform for tomato leaf disease diagnosis"
+requires-python = ">=3.11"
+dependencies = [
+  "pyyaml",
+  "numpy",
+  "pandas",
+  "pyarrow",
+  "pillow",
+  "scikit-learn",
+  "matplotlib",
+  "prometheus-client",
+]
+
+[project.optional-dependencies]
+# Installed on the VM only. The containers install their own slim requirements.
+# mlflow is pinned to the version inside the MLflow and model-server containers: a 3.x
+# client cannot log models to a different server version (environment parity).
+train = ["torch", "torchvision", "mlflow==3.17.2", "pyspark==4.1.1", "dvc", "psutil"]
+# fastapi, python-multipart and cryptography let the unit tests import the backend.
+dev = [
+  "pytest", "pytest-cov", "pytest-html", "ruff", "black", "pre-commit", "httpx", "requests",
+  "fastapi", "python-multipart", "cryptography",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["leafguard", "app", "conftest"]
+
+[tool.ruff.lint.per-file-ignores]
+# FastAPI declares request parameters with calls in the default value. That is the
+# framework's documented style, so B008 does not apply here.
+"services/backend/app/main.py" = ["B008"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "services/backend", "tests"]
+markers = [
+  "spark: starts a local Spark session (slow)",
+  "e2e: needs the Docker Compose stack running",
+]
+
+[tool.coverage.run]
+source = ["leafguard", "app"]
